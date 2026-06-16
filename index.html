@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#00843D">
+    <meta name="description" content="SIMPATI - Sistem Informasi Pembayaran Terintegrasi SD Muhammadiyah Bekonang">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="SIMPATI">
+    
+    <title>SIMPATI - SD Muhammadiyah Bekonang</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="assets/logo.png">
+    <link rel="apple-touch-icon" href="assets/logo.png">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="app.css">
+</head>
+<body>
+    <!-- ==================== SPLASH SCREEN ==================== -->
+    <div id="splashScreen" class="splash-screen">
+        <div class="splash-content">
+            <img src="assets/logo.png" alt="Logo" class="splash-logo">
+            <h1 class="splash-title">SIMPATI</h1>
+            <p class="splash-subtitle">Sistem Informasi Pembayaran Terintegrasi</p>
+            <p class="splash-school">SD Muhammadiyah Bekonang</p>
+            <div class="splash-loader">
+                <div class="spinner"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MAIN APP ==================== -->
+    <div id="app" class="app hidden">
+        
+        <!-- ==================== LOGIN SCREEN ==================== -->
+        <section id="loginScreen" class="screen login-screen">
+            <div class="login-container">
+                <div class="login-header">
+                    <img src="assets/logo.png" alt="Logo" class="login-logo">
+                    <h1 class="login-title">SIMPATI</h1>
+                    <p class="login-subtitle">Sistem Informasi Pembayaran Terintegrasi</p>
+                    <p class="login-school">SD Muhammadiyah Bekonang</p>
+                </div>
+                
+                <form id="loginForm" class="login-form" autocomplete="off">
+                    <div class="form-group">
+                        <label for="username" class="form-label">
+                            <i class="fas fa-user"></i> Username
+                        </label>
+                        <input 
+                            type="text" 
+                            id="username" 
+                            class="form-input" 
+                            placeholder="Masukkan username"
+                            required
+                            autocomplete="off"
+                        >
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password" class="form-label">
+                            <i class="fas fa-lock"></i> Password
+                        </label>
+                        <div class="password-wrapper">
+                            <input 
+                                type="password" 
+                                id="password" 
+                                class="form-input" 
+                                placeholder="Masukkan password"
+                                required
+                                autocomplete="off"
+                            >
+                            <button type="button" class="password-toggle" id="togglePassword">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="role" class="form-label">
+                            <i class="fas fa-user-tag"></i> Login Sebagai
+                        </label>
+                        <select id="role" class="form-input form-select">
+                            <option value="ADMIN">Admin / Bendahara</option>
+                            <option value="WALI_MURID">Wali Murid</option>
+                        </select>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary btn-block" id="loginButton">
+                        <i class="fas fa-sign-in-alt"></i> Masuk
+                    </button>
+                    
+                    <div id="loginError" class="alert alert-danger hidden"></div>
+                </form>
+            </div>
+        </section>
+        
+        <!-- ==================== DASHBOARD ADMIN ==================== -->
+        <section id="dashboardAdmin" class="screen dashboard-admin hidden">
+            <!-- Header -->
+            <header class="header">
+                <div class="header-left">
+                    <button id="sidebarToggle" class="btn-icon">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <img src="assets/logo.png" alt="Logo" class="header-logo">
+                    <h2 class="header-title">SIMPATI</h2>
+                </div>
+                <div class="header-right">
+                    <span class="header-user">
+                        <i class="fas fa-user-circle"></i>
+                        <span id="adminName">Admin</span>
+                    </span>
+                    <button id="logoutAdmin" class="btn-icon" title="Keluar">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </header>
+            
+            <div class="dashboard-layout">
+                <!-- Sidebar -->
+                <nav id="sidebar" class="sidebar">
+                    <ul class="sidebar-menu">
+                        <li class="sidebar-item active" data-page="adminDashboard">
+                            <i class="fas fa-th-large"></i>
+                            <span>Dashboard</span>
+                        </li>
+                        <li class="sidebar-item" data-page="adminSiswa">
+                            <i class="fas fa-users"></i>
+                            <span>Data Siswa</span>
+                        </li>
+                        <li class="sidebar-item" data-page="adminTagihan">
+                            <i class="fas fa-file-invoice"></i>
+                            <span>Tagihan</span>
+                        </li>
+                        <li class="sidebar-item" data-page="adminTransaksi">
+                            <i class="fas fa-money-bill-wave"></i>
+                            <span>Transaksi</span>
+                        </li>
+                        <li class="sidebar-item" data-page="adminVerifikasi">
+                            <i class="fas fa-check-double"></i>
+                            <span>Verifikasi</span>
+                        </li>
+                        <li class="sidebar-item" data-page="adminWhatsApp">
+                            <i class="fab fa-whatsapp"></i>
+                            <span>WhatsApp</span>
+                        </li>
+                        <li class="sidebar-item" data-page="adminLaporan">
+                            <i class="fas fa-chart-bar"></i>
+                            <span>Laporan</span>
+                        </li>
+                        <li class="sidebar-item" data-page="adminPengaturan">
+                            <i class="fas fa-cog"></i>
+                            <span>Pengaturan</span>
+                        </li>
+                    </ul>
+                </nav>
+                
+                <!-- Main Content -->
+                <main class="main-content">
+                    <!-- Dashboard Overview -->
+                    <div id="adminDashboard" class="page active">
+                        <h3 class="page-title">Dashboard</h3>
+                        
+                        <div class="stats-grid">
+                            <div class="stat-card stat-primary">
+                                <div class="stat-icon"><i class="fas fa-user-graduate"></i></div>
+                                <div class="stat-info">
+                                    <span class="stat-value" id="statTotalSiswa">0</span>
+                                    <span class="stat-label">Total Siswa</span>
+                                </div>
+                            </div>
+                            <div class="stat-card stat-success">
+                                <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+                                <div class="stat-info">
+                                    <span class="stat-value" id="statSiswaAktif">0</span>
+                                    <span class="stat-label">Siswa Aktif</span>
+                                </div>
+                            </div>
+                            <div class="stat-card stat-warning">
+                                <div class="stat-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                                <div class="stat-info">
+                                    <span class="stat-value" id="statTunggakan">0</span>
+                                    <span class="stat-label">Tunggakan</span>
+                                </div>
+                            </div>
+                            <div class="stat-card stat-info">
+                                <div class="stat-icon"><i class="fas fa-money-bill-wave"></i></div>
+                                <div class="stat-info">
+                                    <span class="stat-value" id="statPemasukan">Rp 0</span>
+                                    <span class="stat-label">Pemasukan Bulan Ini</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <h4 class="card-title">Ringkasan Keuangan</h4>
+                            <div class="summary-list" id="summaryKeuangan">
+                                <div class="summary-item">
+                                    <span>Total Tagihan</span>
+                                    <span id="summaryTotalTagihan">Rp 0</span>
+                                </div>
+                                <div class="summary-item">
+                                    <span>Total Terbayar</span>
+                                    <span id="summaryTotalTerbayar">Rp 0</span>
+                                </div>
+                                <div class="summary-item">
+                                    <span>Sisa Tagihan</span>
+                                    <span id="summaryTotalSisa">Rp 0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Data Siswa -->
+                    <div id="adminSiswa" class="page">
+                        <div class="page-header">
+                            <h3 class="page-title">Data Siswa</h3>
+                            <button id="btnTambahSiswa" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Tambah Siswa
+                            </button>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="table-toolbar">
+                                <div class="search-box">
+                                    <i class="fas fa-search"></i>
+                                    <input type="text" id="searchSiswa" placeholder="Cari siswa..." class="form-input">
+                                </div>
+                                <select id="filterKelas" class="form-input form-select">
+                                    <option value="">Semua Kelas</option>
+                                </select>
+                                <select id="filterStatusSiswa" class="form-input form-select">
+                                    <option value="">Semua Status</option>
+                                    <option value="AKTIF">Aktif</option>
+                                    <option value="NONAKTIF">Nonaktif</option>
+                                    <option value="LULUS">Lulus</option>
+                                    <option value="PINDAH">Pindah</option>
+                                </select>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table" id="tableSiswa">
+                                    <thead>
+                                        <tr>
+                                            <th>NIS</th>
+                                            <th>Nama</th>
+                                            <th>Kelas</th>
+                                            <th>Nama Wali</th>
+                                            <th>WhatsApp</th>
+                                            <th>Status</th>
+                                            <th>Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tbodySiswa">
+                                        <tr class="empty-row">
+                                            <td colspan="7">Tidak ada data</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Tagihan -->
+                    <div id="adminTagihan" class="page">
+                        <div class="page-header">
+                            <h3 class="page-title">Tagihan</h3>
+                            <div class="page-actions">
+                                <button id="btnTambahTagihanMaster" class="btn btn-primary">
+                                    <i class="fas fa-plus"></i> Tambah Tagihan
+                                </button>
+                                <button id="btnGenerateBilling" class="btn btn-success">
+                                    <i class="fas fa-cogs"></i> Generate Billing
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <h4 class="card-title">Master Tagihan</h4>
+                            <div class="table-responsive">
+                                <table class="table" id="tableTagihanMaster">
+                                    <thead>
+                                        <tr>
+                                            <th>Nama Tagihan</th>
+                                            <th>Jenis</th>
+                                            <th>Nominal</th>
+                                            <th>Status</th>
+                                            <th>Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tbodyTagihanMaster">
+                                        <tr class="empty-row">
+                                            <td colspan="5">Tidak ada data</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <div class="card mt-3">
+                            <h4 class="card-title">Tagihan Siswa</h4>
+                            <div class="table-responsive">
+                                <table class="table" id="tableTagihanSiswa">
+                                    <thead>
+                                        <tr>
+                                            <th>NIS</th>
+                                            <th>Nama Siswa</th>
+                                            <th>Tagihan</th>
+                                            <th>Total</th>
+                                            <th>Terbayar</th>
+                                            <th>Sisa</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tbodyTagihanSiswa">
+                                        <tr class="empty-row">
+                                            <td colspan="7">Tidak ada data</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Transaksi -->
+                    <div id="adminTransaksi" class="page">
+                        <div class="page-header">
+                            <h3 class="page-title">Transaksi</h3>
+                            <button id="btnTambahTransaksi" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Transaksi Baru
+                            </button>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="table-responsive">
+                                <table class="table" id="tableTransaksi">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Tanggal</th>
+                                            <th>NIS</th>
+                                            <th>Nama</th>
+                                            <th>Metode</th>
+                                            <th>Total</th>
+                                            <th>Status</th>
+                                            <th>Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tbodyTransaksi">
+                                        <tr class="empty-row">
+                                            <td colspan="8">Tidak ada data</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Verifikasi Pembayaran -->
+                    <div id="adminVerifikasi" class="page">
+                        <h3 class="page-title">Verifikasi Pembayaran</h3>
+                        
+                        <div class="card">
+                            <h4 class="card-title">Menunggu Verifikasi</h4>
+                            <div class="table-responsive">
+                                <table class="table" id="tableVerifikasi">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Tanggal</th>
+                                            <th>NIS</th>
+                                            <th>Nama</th>
+                                            <th>Total</th>
+                                            <th>Bukti</th>
+                                            <th>Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tbodyVerifikasi">
+                                        <tr class="empty-row">
+                                            <td colspan="7">Tidak ada data</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- WhatsApp -->
+                    <div id="adminWhatsApp" class="page">
+                        <div class="page-header">
+                            <h3 class="page-title">WhatsApp</h3>
+                            <button id="btnKirimReminder" class="btn btn-success">
+                                <i class="fab fa-whatsapp"></i> Kirim Reminder Massal
+                            </button>
+                        </div>
+                        
+                        <div class="card">
+                            <h4 class="card-title">Template Pesan</h4>
+                            <div class="table-responsive">
+                                <table class="table" id="tableWATemplate">
+                                    <thead>
+                                        <tr>
+                                            <th>Nama Template</th>
+                                            <th>Status</th>
+                                            <th>Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tbodyWATemplate">
+                                        <tr class="empty-row">
+                                            <td colspan="3">Tidak ada data</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <div class="card mt-3">
+                            <h4 class="card-title">Log WhatsApp</h4>
+                            <div class="table-responsive">
+                                <table class="table" id="tableWALog">
+                                    <thead>
+                                        <tr>
+                                            <th>Tanggal</th>
+                                            <th>NIS</th>
+                                            <th>No WA</th>
+                                            <th>Jenis</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tbodyWALog">
+                                        <tr class="empty-row">
+                                            <td colspan="5">Tidak ada data</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Laporan -->
+                    <div id="adminLaporan" class="page">
+                        <h3 class="page-title">Laporan</h3>
+                        
+                        <div class="card">
+                            <h4 class="card-title">Laporan Pemasukan</h4>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label">Bulan</label>
+                                    <select id="laporanBulan" class="form-input form-select">
+                                        <option value="">Semua Bulan</option>
+                                        <option value="1">Januari</option>
+                                        <option value="2">Februari</option>
+                                        <option value="3">Maret</option>
+                                        <option value="4">April</option>
+                                        <option value="5">Mei</option>
+                                        <option value="6">Juni</option>
+                                        <option value="7">Juli</option>
+                                        <option value="8">Agustus</option>
+                                        <option value="9">September</option>
+                                        <option value="10">Oktober</option>
+                                        <option value="11">November</option>
+                                        <option value="12">Desember</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Tahun</label>
+                                    <select id="laporanTahun" class="form-input form-select">
+                                        <option value="">Semua Tahun</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">&nbsp;</label>
+                                    <button id="btnFilterLaporan" class="btn btn-primary">
+                                        <i class="fas fa-filter"></i> Filter
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="summary-item mt-3">
+                                <strong>Total Pemasukan:</strong>
+                                <strong id="laporanTotalPemasukan">Rp 0</strong>
+                            </div>
+                            <div class="table-responsive mt-3">
+                                <table class="table" id="tableLaporan">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Tanggal</th>
+                                            <th>NIS</th>
+                                            <th>Nama</th>
+                                            <th>Metode</th>
+                                            <th>Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tbodyLaporan">
+                                        <tr class="empty-row">
+                                            <td colspan="6">Tidak ada data</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <div class="card mt-3">
+                            <h4 class="card-title">Laporan Tunggakan</h4>
+                            <div class="summary-item">
+                                <strong>Total Tunggakan:</strong>
+                                <strong id="laporanTotalTunggakan" class="text-danger">Rp 0</strong>
+                            </div>
+                            <div class="table-responsive mt-3">
+                                <table class="table" id="tableTunggakan">
+                                    <thead>
+                                        <tr>
+                                            <th>NIS</th>
+                                            <th>Nama</th>
+                                            <th>Kelas</th>
+                                            <th>Wali</th>
+                                            <th>Tagihan</th>
+                                            <th>Sisa</th>
+                                            <th>Jatuh Tempo</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tbodyTunggakan">
+                                        <tr class="empty-row">
+                                            <td colspan="7">Tidak ada data</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Pengaturan -->
+                    <div id="adminPengaturan" class="page">
+                        <h3 class="page-title">Pengaturan</h3>
+                        
+                        <div class="card">
+                            <h4 class="card-title">Informasi Sekolah</h4>
+                            <div class="form-group">
+                                <label class="form-label">Nama Sekolah</label>
+                                <input type="text" id="setNamaSekolah" class="form-input">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">URL Logo</label>
+                                <input type="text" id="setLogoUrl" class="form-input">
+                            </div>
+                        </div>
+                        
+                        <div class="card mt-3">
+                            <h4 class="card-title">Pengaturan WhatsApp</h4>
+                            <div class="form-group">
+                                <label class="form-label">Provider</label>
+                                <input type="text" id="setWAProvider" class="form-input" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Token FONNTE</label>
+                                <input type="text" id="setWAToken" class="form-input">
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label">Tanggal Reminder</label>
+                                    <input type="number" id="setReminderDay" class="form-input" min="1" max="31">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Jam Reminder</label>
+                                    <input type="number" id="setReminderHour" class="form-input" min="0" max="23">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card mt-3">
+                            <h4 class="card-title">Rekening Bank</h4>
+                            <div class="form-group">
+                                <label class="form-label">Nama Bank</label>
+                                <input type="text" id="setBankName" class="form-input">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">No Rekening</label>
+                                <input type="text" id="setBankAccount" class="form-input">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Atas Nama</label>
+                                <input type="text" id="setBankHolder" class="form-input">
+                            </div>
+                        </div>
+                        
+                        <div class="card mt-3">
+                            <h4 class="card-title">QRIS</h4>
+                            <div class="form-group">
+                                <label class="form-label">URL Gambar QRIS</label>
+                                <input type="text" id="setQRISUrl" class="form-input">
+                            </div>
+                        </div>
+                        
+                        <button id="btnSimpanPengaturan" class="btn btn-primary mt-3">
+                            <i class="fas fa-save"></i> Simpan Pengaturan
+                        </button>
+                    </div>
+                </main>
+            </div>
+        </section>
+        
+        <!-- ==================== DASHBOARD WALI MURID ==================== -->
+        <section id="dashboardWali" class="screen dashboard-wali hidden">
+            <!-- Header -->
+            <header class="header">
+                <div class="header-left">
+                    <img src="assets/logo.png" alt="Logo" class="header-logo">
+                    <h2 class="header-title">SIMPATI</h2>
+                </div>
+                <div class="header-right">
+                    <span class="header-user">
+                        <i class="fas fa-user-circle"></i>
+                        <span id="waliName">Wali Murid</span>
+                    </span>
+                    <button id="logoutWali" class="btn-icon" title="Keluar">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </header>
+            
+            <main class="main-content-wali">
+                <!-- Status Indikator -->
+                <div class="status-indicator" id="statusIndicator">
+                    <span class="indicator-icon" id="indicatorIcon">🟢</span>
+                    <span class="indicator-text" id="indicatorText">Tidak Ada Tagihan</span>
+                </div>
+                
+                <!-- Info Siswa -->
+                <div class="card">
+                    <h4 class="card-title">Informasi Siswa</h4>
+                    <div class="info-list">
+                        <div class="info-item">
+                            <span>Nama Siswa</span>
+                            <span id="infoNamaSiswa">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span>NIS</span>
+                            <span id="infoNIS">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span>Kelas</span>
+                            <span id="infoKelas">-</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Ringkasan -->
+                <div class="card mt-3">
+                    <h4 class="card-title">Ringkasan Pembayaran</h4>
+                    <div class="summary-list">
+                        <div class="summary-item">
+                            <span>Total Tagihan</span>
+                            <span id="waliTotalTagihan">Rp 0</span>
+                        </div>
+                        <div class="summary-item">
+                            <span>Total Terbayar</span>
+                            <span id="waliTotalTerbayar">Rp 0</span>
+                        </div>
+                        <div class="summary-item">
+                            <span>Sisa</span>
+                            <span id="waliTotalSisa" class="text-danger">Rp 0</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Tagihan Aktif -->
+                <div class="card mt-3">
+                    <h4 class="card-title">Tagihan Aktif</h4>
+                    <div id="tagihanAktifList">
+                        <p class="empty-text">Tidak ada tagihan aktif</p>
+                    </div>
+                </div>
+                
+                <!-- Riwayat Transaksi -->
+                <div class="card mt-3">
+                    <h4 class="card-title">Riwayat Transaksi</h4>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Tanggal</th>
+                                    <th>Metode</th>
+                                    <th>Total</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbodyRiwayatWali">
+                                <tr class="empty-row">
+                                    <td colspan="4">Tidak ada transaksi</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Tombol Pembayaran & Ganti Password -->
+                <div class="action-buttons mt-3">
+                    <button id="btnBayarTransfer" class="btn btn-primary btn-block">
+                        <i class="fas fa-university"></i> Bayar via Transfer
+                    </button>
+                    <button id="btnGantiPassword" class="btn btn-outline btn-block mt-2">
+                        <i class="fas fa-key"></i> Ganti Password
+                    </button>
+                </div>
+            </main>
+        </section>
+    </div>
+
+    <!-- ==================== MODALS ==================== -->
+    <div id="modalOverlay" class="modal-overlay hidden"></div>
+    
+    <!-- Modal Tambah/Edit Siswa -->
+    <div id="modalSiswa" class="modal hidden">
+        <div class="modal-header">
+            <h4 id="modalSiswaTitle">Tambah Siswa</h4>
+            <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="formSiswa">
+                <input type="hidden" id="siswaNISOld">
+                <div class="form-group">
+                    <label class="form-label">NIS</label>
+                    <input type="text" id="siswaNIS" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Nama Siswa</label>
+                    <input type="text" id="siswaNama" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Kelas</label>
+                    <input type="text" id="siswaKelas" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tahun Ajaran</label>
+                    <input type="text" id="siswaTahunAjaran" class="form-input" placeholder="2025/2026">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Nama Wali</label>
+                    <input type="text" id="siswaNamaWali" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">No WhatsApp</label>
+                    <input type="text" id="siswaWA" class="form-input" placeholder="628xxxxxxxxxx" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Status</label>
+                    <select id="siswaStatus" class="form-input form-select">
+                        <option value="AKTIF">Aktif</option>
+                        <option value="NONAKTIF">Nonaktif</option>
+                        <option value="LULUS">Lulus</option>
+                        <option value="PINDAH">Pindah</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Simpan</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Modal Tambah Tagihan Master -->
+    <div id="modalTagihanMaster" class="modal hidden">
+        <div class="modal-header">
+            <h4 id="modalTagihanMasterTitle">Tambah Tagihan</h4>
+            <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="formTagihanMaster">
+                <input type="hidden" id="tagihanMasterId">
+                <div class="form-group">
+                    <label class="form-label">Nama Tagihan</label>
+                    <input type="text" id="tagihanMasterNama" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Jenis</label>
+                    <select id="tagihanMasterJenis" class="form-input form-select" required>
+                        <option value="BULANAN">Bulanan</option>
+                        <option value="TAHUNAN">Tahunan</option>
+                        <option value="INSIDENTAL">Insidental</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Nominal</label>
+                    <input type="number" id="tagihanMasterNominal" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Status</label>
+                    <select id="tagihanMasterAktif" class="form-input form-select">
+                        <option value="TRUE">Aktif</option>
+                        <option value="FALSE">Nonaktif</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Simpan</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Modal Generate Billing -->
+    <div id="modalGenerateBilling" class="modal hidden">
+        <div class="modal-header">
+            <h4>Generate Billing</h4>
+            <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="formGenerateBilling">
+                <div class="form-group">
+                    <label class="form-label">Tagihan</label>
+                    <select id="genTagihanId" class="form-input form-select" required></select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Target (Opsional)</label>
+                    <select id="genTargetJenis" class="form-input form-select">
+                        <option value="all">Semua Siswa</option>
+                        <option value="kelas">Per Kelas</option>
+                        <option value="nis">Siswa Spesifik</option>
+                    </select>
+                </div>
+                <div class="form-group" id="genKelasGroup" style="display:none;">
+                    <label class="form-label">Kelas</label>
+                    <input type="text" id="genKelas" class="form-input">
+                </div>
+                <div class="form-group" id="genNISGroup" style="display:none;">
+                    <label class="form-label">NIS</label>
+                    <input type="text" id="genNIS" class="form-input">
+                </div>
+                <button type="submit" class="btn btn-success btn-block">Generate</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Modal Transaksi -->
+    <div id="modalTransaksi" class="modal hidden">
+        <div class="modal-header">
+            <h4>Transaksi Baru</h4>
+            <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="formTransaksi">
+                <div class="form-group">
+                    <label class="form-label">Siswa</label>
+                    <select id="trxNIS" class="form-input form-select" required></select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Metode Pembayaran</label>
+                    <select id="trxMetode" class="form-input form-select" required>
+                        <option value="TUNAI">Tunai</option>
+                        <option value="TRANSFER">Transfer</option>
+                        <option value="QRIS">QRIS</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tagihan (pilih yang akan dibayar)</label>
+                    <div id="trxTagihanList" class="checkbox-list"></div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Total Pembayaran</label>
+                    <input type="number" id="trxTotal" class="form-input" required>
+                </div>
+                <div class="form-group" id="trxBuktiGroup" style="display:none;">
+                    <label class="form-label">URL Bukti Pembayaran</label>
+                    <input type="text" id="trxBuktiUrl" class="form-input">
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Simpan Transaksi</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Modal Upload Bukti (Wali Murid) -->
+    <div id="modalUploadBukti" class="modal hidden">
+        <div class="modal-header">
+            <h4>Upload Bukti Pembayaran</h4>
+            <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="formUploadBukti">
+                <div class="form-group">
+                    <label class="form-label">Metode Pembayaran</label>
+                    <select id="uploadMetode" class="form-input form-select" required>
+                        <option value="TRANSFER">Transfer</option>
+                        <option value="QRIS">QRIS</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Pilih Tagihan</label>
+                    <div id="uploadTagihanList" class="checkbox-list"></div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Total Transfer</label>
+                    <input type="number" id="uploadTotal" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">URL Bukti Transfer (Google Drive / ImgBB)</label>
+                    <input type="text" id="uploadBuktiUrl" class="form-input" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Kirim Bukti</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Modal Ganti Password -->
+    <div id="modalGantiPassword" class="modal hidden">
+        <div class="modal-header">
+            <h4>Ganti Password</h4>
+            <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="formGantiPassword">
+                <div class="form-group">
+                    <label class="form-label">Password Lama</label>
+                    <input type="password" id="gantiOldPassword" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Password Baru</label>
+                    <input type="password" id="gantiNewPassword" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Konfirmasi Password Baru</label>
+                    <input type="password" id="gantiConfirmPassword" class="form-input" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Simpan</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Modal Lihat Bukti -->
+    <div id="modalLihatBukti" class="modal hidden">
+        <div class="modal-header">
+            <h4>Bukti Pembayaran</h4>
+            <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body text-center">
+            <img id="imgBukti" src="" alt="Bukti Pembayaran" style="max-width:100%; max-height:400px;">
+        </div>
+    </div>
+    
+    <!-- Modal WhatsApp Template -->
+    <div id="modalWATemplate" class="modal hidden">
+        <div class="modal-header">
+            <h4 id="modalWATemplateTitle">Template WhatsApp</h4>
+            <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="formWATemplate">
+                <input type="hidden" id="waTemplateId">
+                <div class="form-group">
+                    <label class="form-label">Nama Template</label>
+                    <input type="text" id="waTemplateNama" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Isi Pesan</label>
+                    <textarea id="waTemplateIsi" class="form-input form-textarea" rows="8" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Simpan</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==================== TOAST / NOTIFICATION ==================== -->
+    <div id="toast" class="toast hidden">
+        <span id="toastIcon"></span>
+        <span id="toastMessage"></span>
+    </div>
+
+    <!-- ==================== LOADING OVERLAY ==================== -->
+    <div id="loadingOverlay" class="loading-overlay hidden">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- ==================== SERVICE WORKER REGISTRATION ==================== -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('sw.js').then(function(registration) {
+                    console.log('ServiceWorker registered with scope:', registration.scope);
+                }).catch(function(error) {
+                    console.log('ServiceWorker registration failed:', error);
+                });
+            });
+        }
+    </script>
+    
+    <!-- Custom JS -->
+    <script src="app.js"></script>
+</body>
+</html>
