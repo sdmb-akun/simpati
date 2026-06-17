@@ -452,27 +452,47 @@ function onRoleChange() {
 }
 
 // ==================== STUDENT MODULE ====================
-async function loadSiswa() {
-    const cached = cacheGet(CACHE_KEY.SISWA, CACHE_DURATION.SISWA);
-    if (cached && cached.length > 0) {
-        STATE.cache.siswa = cached;
-        populateFilterKelas(cached);
-        renderSiswaTable(cached);
-        console.log("📦 Siswa loaded from cache (" + cached.length + " items)");
+let siswaPage = 1;
+const SISWA_PER_PAGE = 20;
+
+async function loadSiswa(page = 1) {
+    siswaPage = page;
+    
+    const cacheKey = CACHE_KEY.SISWA + "_p" + page;
+    const cached = cacheGet(cacheKey, CACHE_DURATION.SISWA);
+    
+    if (cached) {
+        STATE.cache.siswa = cached.students;
+        populateFilterKelas(cached.students);
+        renderSiswaTable(cached.students);
+        renderPagination("paginationSiswa", cached.pagination, loadSiswa);
+        console.log("📦 Siswa page " + page + " from cache");
         return;
     }
+    
     showLoading(true);
-    const result = await apiCall("getStudents", {}, "GET");
+    
+    const params = { page: page, limit: SISWA_PER_PAGE };
+    const kelas = document.getElementById("filterKelas").value;
+    const status = document.getElementById("filterStatusSiswa").value;
+    const search = document.getElementById("searchSiswa").value;
+    if (kelas) params.kelas = kelas;
+    if (status) params.status = status;
+    if (search) params.search = search;
+    
+    const result = await apiCall("getStudents", params, "GET");
+    showLoading(false);
+    
     if (result.success) {
-        STATE.cache.siswa = result.data;
-        cacheSet(CACHE_KEY.SISWA, result.data);
-        populateFilterKelas(result.data);
-        renderSiswaTable(result.data);
-        console.log("🌐 Siswa loaded from server (" + result.data.length + " items)");
+        STATE.cache.siswa = result.data.students;
+        cacheSet(cacheKey, result.data);
+        populateFilterKelas(result.data.students);
+        renderSiswaTable(result.data.students);
+        renderPagination("paginationSiswa", result.data.pagination, loadSiswa);
+        console.log("🌐 Siswa page " + page + " from server");
     } else {
         showToast(result.message, "error");
     }
-    showLoading(false);
 }
 
 function populateFilterKelas(siswaList) {
@@ -612,6 +632,7 @@ async function confirmDeleteSiswa(nis, nama) {
 async function loadTagihan() {
     const cachedMaster = cacheGet(CACHE_KEY.TAGIHAN_MASTER, CACHE_DURATION.TAGIHAN_MASTER);
     const cachedSiswa = cacheGet(CACHE_KEY.TAGIHAN_SISWA, CACHE_DURATION.TAGIHAN_SISWA);
+    
     if (cachedMaster && cachedSiswa) {
         STATE.cache.tagihanMaster = cachedMaster;
         STATE.cache.tagihanSiswa = cachedSiswa;
@@ -620,24 +641,25 @@ async function loadTagihan() {
         console.log("📦 Tagihan loaded from cache");
         return;
     }
+    
     showLoading(true);
     const [masterResult, siswaResult] = await Promise.all([
         apiCall("getTagihanMaster", {}, "GET"),
         apiCall("getTagihanSiswa", {}, "GET")
     ]);
+    
     if (masterResult.success) {
         STATE.cache.tagihanMaster = masterResult.data;
         cacheSet(CACHE_KEY.TAGIHAN_MASTER, masterResult.data);
         renderTagihanMasterTable(masterResult.data);
     }
+    
     if (siswaResult.success) {
         STATE.cache.tagihanSiswa = siswaResult.data;
         cacheSet(CACHE_KEY.TAGIHAN_SISWA, siswaResult.data);
         renderTagihanSiswaTable(siswaResult.data);
     }
-    if (!masterResult.success && !siswaResult.success) {
-        showToast("Gagal memuat data tagihan", "error");
-    }
+    
     showLoading(false);
     console.log("🌐 Tagihan loaded from server");
 }
@@ -820,25 +842,87 @@ async function handleGenerateBilling(e) {
 }
 
 // ==================== PAYMENT MODULE ====================
-async function loadTransaksi() {
-    const cached = cacheGet(CACHE_KEY.TRANSAKSI, CACHE_DURATION.TRANSAKSI);
-    if (cached && cached.length > 0) {
-        STATE.cache.transaksi = cached;
-        renderTransaksiTable(cached);
-        console.log("📦 Transaksi loaded from cache");
+let transaksiPage = 1;
+const TRANSAKSI_PER_PAGE = 20;
+
+async function loadTransaksi(page = 1) {
+    transaksiPage = page;
+    
+    const cacheKey = CACHE_KEY.TRANSAKSI + "_p" + page;
+    const cached = cacheGet(cacheKey, CACHE_DURATION.TRANSAKSI);
+    
+    if (cached) {
+        STATE.cache.transaksi = cached.transaksi;
+        renderTransaksiTable(cached.transaksi);
+        renderPagination("paginationTransaksi", cached.pagination, loadTransaksi);
+        console.log("📦 Transaksi page " + page + " from cache");
         return;
     }
+    
     showLoading(true);
-    const result = await apiCall("getTransaksi", {}, "GET");
+    const result = await apiCall("getTransaksi", { page: page, limit: TRANSAKSI_PER_PAGE }, "GET");
     showLoading(false);
+    
     if (result.success) {
-        STATE.cache.transaksi = result.data;
-        cacheSet(CACHE_KEY.TRANSAKSI, result.data);
-        renderTransaksiTable(result.data);
-        console.log("🌐 Transaksi loaded from server");
+        STATE.cache.transaksi = result.data.transaksi;
+        cacheSet(cacheKey, result.data);
+        renderTransaksiTable(result.data.transaksi);
+        renderPagination("paginationTransaksi", result.data.pagination, loadTransaksi);
+        console.log("🌐 Transaksi page " + page + " from server");
     } else {
         showToast(result.message, "error");
     }
+}
+
+// ==================== PAGINATION RENDERER ====================
+function renderPagination(containerId, pagination, loadFunction) {
+    let container = document.getElementById(containerId);
+    
+    if (!container) {
+        const tables = document.querySelectorAll(".table-responsive");
+        const lastTable = tables[tables.length - 1];
+        if (lastTable) {
+            container = document.createElement("div");
+            container.id = containerId;
+            container.className = "pagination-container";
+            lastTable.parentNode.insertBefore(container, lastTable.nextSibling);
+        }
+    }
+    
+    if (!container || pagination.totalPages <= 1) {
+        if (container) container.innerHTML = "";
+        return;
+    }
+    
+    let html = '<div class="pagination">';
+    html += '<span class="pagination-info">Total: ' + pagination.total + ' data | Halaman ' + pagination.page + ' dari ' + pagination.totalPages + '</span>';
+    html += '<div class="pagination-buttons">';
+    
+    if (pagination.page > 1) {
+        html += '<button class="btn btn-sm btn-outline" onclick="event.preventDefault();(' + loadFunction.name + ')(' + (pagination.page - 1) + ')">« Prev</button>';
+    } else {
+        html += '<button class="btn btn-sm btn-outline" disabled>« Prev</button>';
+    }
+    
+    const startPage = Math.max(1, pagination.page - 2);
+    const endPage = Math.min(pagination.totalPages, pagination.page + 2);
+    
+    for (let i = startPage; i <= endPage; i++) {
+        if (i === pagination.page) {
+            html += '<button class="btn btn-sm btn-primary">' + i + '</button>';
+        } else {
+            html += '<button class="btn btn-sm btn-outline" onclick="event.preventDefault();(' + loadFunction.name + ')(' + i + ')">' + i + '</button>';
+        }
+    }
+    
+    if (pagination.page < pagination.totalPages) {
+        html += '<button class="btn btn-sm btn-outline" onclick="event.preventDefault();(' + loadFunction.name + ')(' + (pagination.page + 1) + ')">Next »</button>';
+    } else {
+        html += '<button class="btn btn-sm btn-outline" disabled>Next »</button>';
+    }
+    
+    html += '</div></div>';
+    container.innerHTML = html;
 }
 
 function renderTransaksiTable(data) {
@@ -1053,6 +1137,7 @@ async function verifikasiPembayaran(id) {
 // ==================== WHATSAPP MODULE ====================
 async function loadWhatsApp() {
     const cachedTemplate = cacheGet(CACHE_KEY.WA_TEMPLATE, CACHE_DURATION.WA_TEMPLATE);
+    
     if (cachedTemplate) {
         STATE.cache.waTemplate = cachedTemplate;
         renderWATemplateTable(cachedTemplate);
@@ -1066,10 +1151,9 @@ async function loadWhatsApp() {
             console.log("🌐 WA template loaded from server");
         }
     }
+    
     const logResult = await apiCall("getWALog", {}, "GET");
-    if (logResult.success) {
-        renderWALogTable(logResult.data);
-    }
+    if (logResult.success) renderWALogTable(logResult.data);
 }
 
 function renderWATemplateTable(data) {
@@ -1249,19 +1333,31 @@ async function loadDashboardAdmin() {
     const cached = cacheGet(CACHE_KEY.DASHBOARD_ADMIN, CACHE_DURATION.DASHBOARD);
     if (cached) {
         renderDashboardAdminData(cached);
-        console.log("📦 Dashboard admin loaded from cache");
+        console.log("📦 Dashboard loaded from cache");
         return;
     }
+    
     showLoading(true);
     const result = await apiCall("getDashboardAdmin", {}, "GET");
     showLoading(false);
+    
     if (result.success) {
         cacheSet(CACHE_KEY.DASHBOARD_ADMIN, result.data);
         renderDashboardAdminData(result.data);
-        console.log("🌐 Dashboard admin loaded from server");
+        console.log("🌐 Dashboard loaded from server");
     }
 }
 
+// Tambahkan fungsi baru ini setelah loadDashboardAdmin()
+function renderDashboardAdminData(d) {
+    document.getElementById("statTotalSiswa").textContent = d.totalSiswa;
+    document.getElementById("statSiswaAktif").textContent = d.totalSiswaAktif;
+    document.getElementById("statTunggakan").textContent = d.tunggakan;
+    document.getElementById("statPemasukan").textContent = formatCurrency(d.pemasukanBulanIni);
+    document.getElementById("summaryTotalTagihan").textContent = formatCurrency(d.totalTagihan);
+    document.getElementById("summaryTotalTerbayar").textContent = formatCurrency(d.totalTerbayar);
+    document.getElementById("summaryTotalSisa").textContent = formatCurrency(d.totalSisa);
+}
 function renderDashboardAdminData(d) {
     document.getElementById("statTotalSiswa").textContent = d.totalSiswa;
     document.getElementById("statSiswaAktif").textContent = d.totalSiswaAktif;
@@ -1275,16 +1371,20 @@ function renderDashboardAdminData(d) {
 async function loadDashboardWali() {
     const nis = STATE.user.siswa?.nis;
     if (!nis) return;
+    
     const cacheKey = CACHE_KEY.DASHBOARD_WALI + "_" + nis;
     const cached = cacheGet(cacheKey, CACHE_DURATION.DASHBOARD);
+    
     if (cached) {
         renderDashboardWaliData(cached);
         console.log("📦 Dashboard wali loaded from cache");
         return;
     }
+    
     showLoading(true);
     const result = await apiCall("getDashboardWali", { nis: nis }, "GET");
     showLoading(false);
+    
     if (result.success) {
         cacheSet(cacheKey, result.data);
         renderDashboardWaliData(result.data);
@@ -1292,6 +1392,48 @@ async function loadDashboardWali() {
     }
 }
 
+// Tambahkan fungsi baru ini setelah loadDashboardWali()
+function renderDashboardWaliData(d) {
+    document.getElementById("infoNamaSiswa").textContent = d.siswa.nama;
+    document.getElementById("infoNIS").textContent = d.siswa.nis;
+    document.getElementById("infoKelas").textContent = d.siswa.kelas;
+    document.getElementById("indicatorIcon").textContent = d.indikator;
+    
+    if (d.indikator === "🟢") {
+        document.getElementById("indicatorText").textContent = "Tidak Ada Tagihan";
+        document.getElementById("statusIndicator").className = "status-indicator status-ok";
+    } else if (d.indikator === "🟡") {
+        document.getElementById("indicatorText").textContent = "Ada Tagihan Aktif";
+        document.getElementById("statusIndicator").className = "status-indicator status-warning";
+    } else {
+        document.getElementById("indicatorText").textContent = "Ada Tunggakan";
+        document.getElementById("statusIndicator").className = "status-indicator status-danger";
+    }
+    
+    document.getElementById("waliTotalTagihan").textContent = formatCurrency(d.totalTagihan);
+    document.getElementById("waliTotalTerbayar").textContent = formatCurrency(d.totalTerbayar);
+    document.getElementById("waliTotalSisa").textContent = formatCurrency(d.totalSisa);
+    
+    const tagihanList = document.getElementById("tagihanAktifList");
+    if (d.tagihanAktif.length === 0) {
+        tagihanList.innerHTML = '<p class="empty-text">Tidak ada tagihan aktif</p>';
+    } else {
+        tagihanList.innerHTML = d.tagihanAktif.map(function(t) {
+            return `
+                <div class="tagihan-item">
+                    <div class="tagihan-info">
+                        <strong>${t.namaTagihan}</strong>
+                        <span>Total: ${formatCurrency(t.total)} | Terbayar: ${formatCurrency(t.terbayar)} | Sisa: ${formatCurrency(t.sisa)}</span>
+                        <span class="text-muted">Jatuh Tempo: ${t.jatuhTempo || "-"}</span>
+                    </div>
+                    <span class="tagihan-status">${getTagihanStatusBadge(t.status)}</span>
+                </div>
+            `;
+        }).join("");
+    }
+    
+    loadRiwayatWali(d.siswa.nis);
+}
 function renderDashboardWaliData(d) {
     document.getElementById("infoNamaSiswa").textContent = d.siswa.nama;
     document.getElementById("infoNIS").textContent = d.siswa.nis;
@@ -1544,8 +1686,8 @@ document.addEventListener("keydown", function(e) {
 });
 
 // ==================== EXPORT TO GLOBAL ====================
-window.editSiswa = editSiswa;
-window.confirmDeleteSiswa = confirmDeleteSiswa;
+window.loadSiswa = loadSiswa;
+window.loadTransaksi = loadTransaksi;
 window.editTagihanMaster = editTagihanMaster;
 window.confirmDeleteTagihanMaster = confirmDeleteTagihanMaster;
 window.editWATemplate = editWATemplate;
