@@ -6,7 +6,7 @@
 
 // ==================== CONFIGURATION ====================
 const CONFIG = {
-    API_URL: "GOOGLE_APPS_SCRIPT_WEBAPP_URL" // Ganti dengan URL Google Apps Script Web App
+    API_URL: "https://script.google.com/macros/s/AKfycbzbcEJA1fjsMimTmLKEmGkAmYjRKG3jzMBsVro_3VzQV9KmPkZvjWgzcFg8XavGxFt7/exec" // Ganti dengan URL Google Apps Script Web App
 };
 
 // ==================== STATE MANAGEMENT ====================
