@@ -716,30 +716,50 @@ async function handleSaveTagihanMaster(e) {
     const id = document.getElementById("tagihanMasterId").value;
     const nama = document.getElementById("tagihanMasterNama").value.trim();
     const jenis = document.getElementById("tagihanMasterJenis").value;
-    const nominal = document.getElementById("tagihanMasterNominal").value;
+    const nominal = parseInt(document.getElementById("tagihanMasterNominal").value);
     const aktif = document.getElementById("tagihanMasterAktif").value;
+    
     if (!nama || !nominal) {
         showToast("Nama dan Nominal wajib diisi", "error");
         return;
     }
+    
     showLoading(true);
-    let result;
-    if (id) {
-        result = await apiCall("updateTagihanMaster", { id: id, nama: nama, jenis: jenis, nominal: nominal, aktif: aktif });
-    } else {
-        result = await apiCall("saveTagihanMaster", { nama: nama, jenis: jenis, nominal: nominal, aktif: aktif });
+    
+    try {
+        let result;
+        if (id) {
+            result = await apiCall("updateTagihanMaster", {
+                id: id,
+                nama: nama,
+                jenis: jenis,
+                nominal: nominal,
+                aktif: aktif
+            });
+        } else {
+            result = await apiCall("saveTagihanMaster", {
+                nama: nama,
+                jenis: jenis,
+                nominal: nominal,
+                aktif: aktif
+            });
+        }
+        
+        if (result.success) {
+            closeAllModals();
+            showToast(result.message, "success");
+            cacheClear("simpatic_cache_tagihan");
+            loadTagihan();
+        } else {
+            showToast(result.message, "error");
+        }
+    } catch (error) {
+        console.error("Error saving tagihan:", error);
+        showToast("Gagal menyimpan tagihan: " + error.message, "error");
     }
+    
     showLoading(false);
-    if (result.success) {
-        closeAllModals();
-        showToast(result.message, "success");
-        cacheClear("simpatic_cache_tagihan");
-        loadTagihan();
-    } else {
-        showToast(result.message, "error");
-    }
 }
-
 async function confirmDeleteTagihanMaster(id, nama) {
     if (!confirm("Yakin ingin menghapus tagihan " + nama + "?")) return;
     showLoading(true);
